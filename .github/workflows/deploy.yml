@@ -1,0 +1,37 @@
+name: Terraform Deploy  # Name of the workflow
+
+# When to trigger the workflow
+on:
+  push:
+    branches:
+      - main        # Trigger workflow only when code is pushed to 'main' branch
+
+jobs:
+  terraform:          # Job name
+    name: Terraform Apply
+    runs-on: ubuntu-latest  # Use Ubuntu environment for workflow
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3  # Pulls your repo code into the workflow runner
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v2  # Installs Terraform
+      with:
+        terraform_version: 1.5.0          # Specify the Terraform version
+
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v2  # Configure AWS access
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}   # Stored in GitHub Secrets
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+
+    - name: Terraform Init
+      run: terraform init   # Initialize Terraform directory
+
+    - name: Terraform Plan
+      run: terraform plan   # Show what Terraform will create/update
+
+    - name: Terraform Apply
+      run: terraform apply -auto-approve  # Deploy resources automatically
